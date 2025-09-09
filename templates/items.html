@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>All Items | Back2U</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    .item-card {
+      transition: transform 0.2s;
+      cursor: pointer;
+    }
+    .item-card:hover {
+      transform: scale(1.03);
+    }
+    .item-image {
+      height: 180px;
+      object-fit: cover;
+      border-radius: 10px;
+    }
+  </style>
+</head>
+<body class="bg-light">
+
+<div class="container py-5">
+  <h2 class="mb-4">📋 All Reported Items</h2>
+  <div class="row">
+    {% for item in items %}
+      <div class="col-md-4 mb-4">
+        <!-- ✅ Clickable card links to item detail -->
+        <a href="{{ url_for('item_detail', item_id=item.id) }}" class="text-decoration-none text-dark">
+          <div class="card item-card shadow-sm">
+            {% if item.image %}
+              <img src="{{ url_for('static', filename='images/' ~ item.image) }}" 
+                   class="card-img-top item-image" 
+                   alt="Item Image">
+            {% else %}
+              <img src="{{ url_for('static', filename='images/no-image.png') }}" 
+                   class="card-img-top item-image" 
+                   alt="No Image">
+            {% endif %}
+            <div class="card-body">
+              <h5 class="card-title">{{ item.title }}</h5>
+              <p class="card-text text-truncate">{{ item.description }}</p>
+              <span class="badge bg-info">{{ item.type }}</span>
+              {% if item.is_resolved %}
+                <span class="badge bg-success">Resolved</span>
+              {% else %}
+                <span class="badge bg-warning">Pending</span>
+              {% endif %}
+            </div>
+          </div>
+        </a>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

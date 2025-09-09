@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Dashboard | Back2U</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <style>
+    body { background-color: #f9f9f9; }
+    body.dark-mode { background-color: #121212 !important; color: #e0e0e0 !important; }
+    .navbar { background: linear-gradient(to right, #6a11cb, #2575fc); }
+    .navbar a { color: white !important; }
+    .dark-mode .navbar { background: linear-gradient(to right, #333, #555); }
+    .hero {
+      text-align: center; padding: 60px 20px; background: #fff; border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1); margin-bottom: 30px;
+    }
+    .dark-mode .hero { background: #1e1e1e; color: #fff; }
+    .stats-card { border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+    .dark-mode .stats-card { background-color: #1e1e1e !important; color: #fff !important; }
+    .item-thumb {
+      width: 100%; max-height: 150px; object-fit: contain;
+      border-radius: 8px; margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg px-4">
+  <a class="navbar-brand fw-bold text-white" href="{{ url_for('dashboard') }}">Back2U</a>
+  <div class="ms-auto d-flex align-items-center gap-2">
+    <button type="button" onclick="goBack()" class="btn btn-light btn-sm rounded-pill">⬅ Back</button>
+    <button onclick="toggleDarkMode()" class="btn btn-outline-light btn-sm rounded-pill">🌙</button>
+    {% if current_user.is_authenticated %}
+      <span class="text-white ms-2">Hi, {{ current_user.name }}</span>
+      <a href="{{ url_for('logout') }}" class="btn btn-light btn-sm rounded-pill">Logout</a>
+    {% else %}
+      <a href="{{ url_for('login') }}" class="btn btn-outline-light me-2 rounded-pill">Login</a>
+      <a href="{{ url_for('register') }}" class="btn btn-light rounded-pill">Sign Up</a>
+    {% endif %}
+  </div>
+</nav>
+
+<!-- Hero -->
+<div class="container mt-5">
+  <div class="hero">
+    <h1 class="fw-bold">Lost & Found Management System</h1>
+    <p class="text-muted">Easily report and retrieve lost items</p>
+    <a href="{{ url_for('add_item') }}" class="btn btn-primary btn-lg mt-3">📌 Report Item</a>
+  </div>
+</div>
+
+<!-- Stats Section -->
+<div class="container mb-5">
+  <div class="row g-4 text-center">
+    <div class="col-md-2 col-6"><div class="card stats-card p-3"><h4>{{ stats.total }}</h4><p>Total</p></div></div>
+    <div class="col-md-2 col-6"><div class="card stats-card p-3"><h4>{{ stats.lost }}</h4><p>Lost</p></div></div>
+    <div class="col-md-2 col-6"><div class="card stats-card p-3"><h4>{{ stats.found }}</h4><p>Found</p></div></div>
+    <div class="col-md-2 col-6"><div class="card stats-card p-3"><h4>{{ stats.resolved }}</h4><p>Resolved</p></div></div>
+    <div class="col-md-2 col-6"><div class="card stats-card p-3"><h4>{{ stats.mine }}</h4><p>My Items</p></div></div>
+  </div>
+</div>
+
+<!-- My Reported Items -->
+<div class="container mb-5">
+  <h3 class="mb-4">🆕 My Reported Items</h3>
+  <div class="row">
+    {% for item in items %}
+      <div class="col-md-3 mb-4">
+        <div class="card shadow-sm h-100">
+          <div class="card-body">
+            {% if item.image %}
+              <img src="{{ url_for('static', filename='images/' ~ item.image) }}" alt="Item Image" class="item-thumb">
+            {% else %}
+              <p class="text-muted"><i>No image uploaded</i></p>
+            {% endif %}
+            <h6 class="card-title">{{ item.title }}</h6>
+            <p class="small"><strong>Type:</strong> {{ item.type }}</p>
+            <p class="small"><strong>Location:</strong> {{ item.location }}</p>
+            <span id="badge-{{ item.id }}" 
+                  class="badge {% if item.is_resolved %}bg-success{% else %}bg-warning{% endif %}">
+              {% if item.is_resolved %}Resolved{% else %}Pending{% endif %}
+            </span>
+          </div>
+          <div class="card-footer text-center d-flex justify-content-between">
+            <a href="{{ url_for('item_detail', item_id=item.id) }}" class="btn btn-outline-primary btn-sm">View</a>
+            <button type="button"
+                    id="btn-{{ item.id }}"
+                    onclick="toggleStatus({{ item.id }})"
+                    class="btn btn-sm {% if item.is_resolved %}btn-warning{% else %}btn-success{% endif %}">
+              {% if item.is_resolved %}Mark Pending{% else %}Mark Resolved{% endif %}
+            </button>
+          </div>
+        </div>
+      </div>
+    {% else %}
+      <p class="text-muted">You haven’t reported any items yet.</p>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- All Latest Items -->
+<div class="container mb-5">
+  <h3 class="mb-4">🌍 All Latest Items</h3>
+  <div class="row">
+    {% for item in all_items %}
+      <div class="col-md-3 mb-4">
+        <div class="card shadow-sm h-100">
+          <div class="card-body">
+            {% if item.image %}
+              <img src="{{ url_for('static', filename='images/' ~ item.image) }}" alt="Item Image" class="item-thumb">
+            {% else %}
+              <p class="text-muted"><i>No image uploaded</i></p>
+            {% endif %}
+            <h6 class="card-title">{{ item.title }}</h6>
+            <p class="small"><strong>Type:</strong> {{ item.type }}</p>
+            <p class="small"><strong>Location:</strong> {{ item.location }}</p>
+            <span class="badge {% if item.is_resolved %}bg-success{% else %}bg-warning{% endif %}">
+              {% if item.is_resolved %}Resolved{% else %}Pending{% endif %}
+            </span>
+          </div>
+          <!-- ✅ Added footer with View button -->
+          <div class="card-footer text-center">
+            <a href="{{ url_for('item_detail', item_id=item.id) }}" class="btn btn-outline-primary btn-sm">View</a>
+          </div>
+        </div>
+      </div>
+    {% else %}
+      <p class="text-muted">No items reported by anyone yet.</p>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- Scripts -->
+<script>
+  // 🌙 Dark mode
+  function toggleDarkMode() {
+    document.body.classList.toggle("dark-mode");
+    if (document.body.classList.contains("dark-mode")) {
+      localStorage.setItem("darkMode", "enabled");
+    } else {
+      localStorage.setItem("darkMode", "disabled");
+    }
+  }
+  window.onload = function() {
+    if (localStorage.getItem("darkMode") === "enabled") {
+      document.body.classList.add("dark-mode");
+    }
+  }
+
+  // ⬅ Smart Back
+  function goBack() {
+    if (document.referrer && document.referrer !== window.location.href) {
+      history.back();
+    } else {
+      window.location.href = "{{ url_for('dashboard') }}";
+    }
+  }
+
+  // ✅ AJAX toggle status
+  async function toggleStatus(itemId) {
+    try {
+      const res = await fetch(`/update_status/${itemId}`, {
+        method: "POST",
+        headers: { "X-Requested-With": "XMLHttpRequest" }
+      });
+      const data = await res.json();
+
+      // Update badge + button instantly
+      const badge = document.getElementById("badge-" + itemId);
+      const btn = document.getElementById("btn-" + itemId);
+
+      badge.textContent = data.is_resolved ? "Resolved" : "Pending";
+      badge.className = "badge " + (data.is_resolved ? "bg-success" : "bg-warning");
+
+      btn.textContent = data.is_resolved ? "Mark Pending" : "Mark Resolved";
+      btn.className = "btn btn-sm " + (data.is_resolved ? "btn-warning" : "btn-success");
+    } catch (err) {
+      alert("Error updating status");
+    }
+  }
+</script>
+</body>
+</html>

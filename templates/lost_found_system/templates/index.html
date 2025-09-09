@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Lost & Found - Home</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+        .navbar {
+            background: #007BFF;
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            margin-right: 15px;
+        }
+        .container {
+            max-width: 900px;
+            margin: auto;
+        }
+        .item-card {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+        }
+        .item-card h3 {
+            margin: 0;
+            color: #333;
+        }
+        .status {
+            font-size: 0.9rem;
+            padding: 4px 8px;
+            border-radius: 6px;
+            display: inline-block;
+            margin-top: 8px;
+        }
+        .pending { background: #ffc107; color: #000; }
+        .resolved { background: #28a745; color: #fff; }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <a href="{{ url_for('home') }}">🏠 Home</a>
+        {% if current_user.is_authenticated %}
+            <span>Welcome, {{ current_user.name }}!</span>
+            <a href="{{ url_for('logout') }}">Logout</a>
+        {% else %}
+            <a href="{{ url_for('login') }}">Login</a>
+            <a href="{{ url_for('signup') }}">Signup</a>
+        {% endif %}
+    </div>
+
+    <div class="container">
+        <h2>📌 Lost & Found Items</h2>
+
+        {% if items %}
+            {% for item in items %}
+                <div class="item-card">
+                    <h3><a href="{{ url_for('item_detail', item_id=item.id) }}">{{ item.title }}</a></h3>
+                    <p>{{ item.description }}</p>
+                    <p><b>Location:</b> {{ item.location }}</p>
+                    <p><b>Reported:</b> {{ item.date_reported.strftime('%d %b %Y, %I:%M %p') }}</p>
+                    <span class="status {{ 'resolved' if item.is_resolved else 'pending' }}">
+                        {{ "Resolved" if item.is_resolved else "Pending" }}
+                    </span>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p>No items reported yet.</p>
+        {% endif %}
+    </div>
+</body>
+</html>
