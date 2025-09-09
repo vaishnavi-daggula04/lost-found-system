@@ -27,26 +27,17 @@ It includes **user authentication**, **item management**, and a simple dashboard
 ## ⚡ Installation
 
 1. Clone the repo:
-   ```bash
    git clone https://github.com/vaishnavi-daggula04/lost-found-system.git
    cd lost-found-system
 Create a virtual environment:
-
-bash
-Copy code
 python -m venv venv
 source venv/bin/activate   # Mac/Linux
 venv\Scripts\activate      # Windows
 Install dependencies:
-
-bash
-Copy code
 pip install -r requirements.txt
 Run the app:
-
-bash
-Copy code
 python app.py
+
 Visit:
 👉 http://127.0.0.1:5000
 
